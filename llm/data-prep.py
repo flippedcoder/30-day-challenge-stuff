@@ -1,6 +1,7 @@
 import urllib.request
 import re
-from tokenizer import SimpleTokenizerV1, SimpleTokenizerV2
+from tokenizer import SimpleTokenizerV2
+import tiktoken
 
 # Get raw text from url
 url = ("https://raw.githubusercontent.com/rasbt/"
@@ -48,11 +49,39 @@ vocab = {token:integer for integer, token in enumerate(all_tokens)}
 # print(len(vocab))
 
 text1 = "Hello, do you like tea?"
-text2 = "In the sunlit terraces of the palace."
+text2 = "In the sunlit terraces of someunknownPlace."
 text = " <|endoftext|> ".join((text1, text2))
 # print(text)
 
 # Make the V2 tokenizer
-tokenizer = SimpleTokenizerV2(vocab)
+# tokenizer = SimpleTokenizerV2(vocab)
 # print(tokenizer.encode(text))
-print(tokenizer.decode(tokenizer.encode(text)))
+# print(tokenizer.decode(tokenizer.encode(text)))
+
+# Use tiktoken for byte pair encoding tokenizer
+tokenizer = tiktoken.get_encoding("gpt2")
+
+# integers = tokenizer.encode(text, allowed_special={"<|endoftext|>"})
+# print(integers)
+
+# strings = tokenizer.decode(integers)
+# print(strings)
+
+# Encode The Verdict raw text with BPE tokenizer
+enc_text = tokenizer.encode(raw_text)
+
+print(len(enc_text))
+
+enc_sample = enc_text[50:]
+
+# Demo the concept of input-target pairs for LLM training
+context_size = 4
+x = enc_sample[:context_size]
+y = enc_sample[1:context_size+1]
+print(f"x: {x}")
+print(f"y: {y}")
+
+for i in range(1, context_size+1):
+    context = enc_sample[:i]
+    desired = enc_sample[i]
+    print(tokenizer.decode(context), "----->", tokenizer.decode([desired]))
